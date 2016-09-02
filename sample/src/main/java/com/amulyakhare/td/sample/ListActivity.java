@@ -3,7 +3,6 @@ package com.amulyakhare.td.sample;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +45,7 @@ public class ListActivity extends AppCompatActivity {
 
     // declare the color generator and drawable builder
     private ColorGenerator mColorGenerator = ColorGenerator.MATERIAL;
-    private TextDrawable.IBuilder mDrawableBuilder;
+    private TextDrawable.Builder mDrawableBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,40 +55,36 @@ public class ListActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int type = intent.getIntExtra(MainActivity.TYPE, DrawableProvider.SAMPLE_RECT);
 
-        // initialize the builder based on the "TYPE"
+        // initialize the Builder based on the "TYPE"
         switch (type) {
             case DrawableProvider.SAMPLE_RECT:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .rect();
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setShape(TextDrawable.SHAPE_RECT);
                 break;
             case DrawableProvider.SAMPLE_ROUND_RECT:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .roundRect(10);
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setRadius(10)
+                        .setShape(TextDrawable.SHAPE_ROUND_RECT);
                 break;
             case DrawableProvider.SAMPLE_ROUND:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .round();
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setShape(TextDrawable.SHAPE_ROUND);
                 break;
             case DrawableProvider.SAMPLE_RECT_BORDER:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .beginConfig()
-                            .withBorder(4)
-                        .endConfig()
-                        .rect();
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setBorder(4)
+                        .setShape(TextDrawable.SHAPE_RECT);
                 break;
             case DrawableProvider.SAMPLE_ROUND_RECT_BORDER:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .beginConfig()
-                            .withBorder(4)
-                        .endConfig()
-                        .roundRect(10);
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setBorder(4)
+                        .setRadius(10)
+                        .setShape(TextDrawable.SHAPE_ROUND_RECT);
                 break;
             case DrawableProvider.SAMPLE_ROUND_BORDER:
-                mDrawableBuilder = TextDrawable.builder(this)
-                        .beginConfig()
-                            .withBorder(4)
-                        .endConfig()
-                        .round();
+                mDrawableBuilder = new TextDrawable.Builder()
+                        .setBorder(4)
+                        .setShape(TextDrawable.SHAPE_ROUND);
                 break;
         }
 
@@ -146,12 +141,15 @@ public class ListActivity extends AppCompatActivity {
 
         private void updateCheckedState(ViewHolder holder, ListData item) {
             if (item.isChecked) {
-                holder.imageView.setImageDrawable(mDrawableBuilder.build(" ", 0xff616161));
+                TextDrawable drawable = mDrawableBuilder.setColor(0xff616161).setText(" ").build();
+                holder.imageView.setImageDrawable(drawable);
                 holder.view.setBackgroundColor(HIGHLIGHT_COLOR);
                 holder.checkIcon.setVisibility(View.VISIBLE);
-            }
-            else {
-                TextDrawable drawable = mDrawableBuilder.build(String.valueOf(item.data.charAt(0)), mColorGenerator.getColor(item.data));
+            } else {
+                TextDrawable drawable = mDrawableBuilder
+                        .setColor(mColorGenerator.getColor(item.data))
+                        .setText(String.valueOf(item.data.charAt(0)))
+                        .build();
                 holder.imageView.setImageDrawable(drawable);
                 holder.view.setBackgroundColor(Color.TRANSPARENT);
                 holder.checkIcon.setVisibility(View.GONE);

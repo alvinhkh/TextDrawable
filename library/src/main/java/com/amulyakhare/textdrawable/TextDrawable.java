@@ -1,6 +1,5 @@
 package com.amulyakhare.textdrawable;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,41 +11,57 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.graphics.drawable.shapes.Shape;
 import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DimenRes;
+import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 
 import com.amulyakhare.textdrawable.util.TypefaceHelper;
 
 /**
- * @author amulya
- * @datetime 14 Oct 2014, 3:53 PM
+ * @author amulya, alvinhkh
  */
 public class TextDrawable extends ShapeDrawable {
 
-    private final Paint textPaint;
-    private final Paint borderPaint;
+    public static final int SHAPE_RECT = 0;
+
+    public static final int SHAPE_ROUND_RECT = 1;
+
+    public static final int SHAPE_ROUND = 2;
+    
     private static final float SHADE_FACTOR = 0.9f;
-    private final String text;
-    private final RectShape shape;
-    private final int height;
-    private final int width;
-    private final int fontSize;
-    private final float radius;
-    private final int borderThickness;
-    private final int borderColor;
+
     private Bitmap bitmap;
 
-    private TextDrawable(Builder builder) {
-        super(builder.shape);
+    private final int borderColor;
 
+    private final Paint borderPaint;
+
+    private final int borderThickness;
+
+    private final int fontSize;
+
+    private final int height;
+
+    private final String text;
+
+    private final Paint textPaint;
+
+    private final float radius;
+
+    @TextDrawableShape
+    private final int shape;
+
+    private final int width;
+
+    private TextDrawable(Builder builder) {
+        super(builder.getShape());
+        
         // shape properties
         shape = builder.shape;
         height = builder.height;
@@ -59,13 +74,13 @@ public class TextDrawable extends ShapeDrawable {
         // text paint settings
         fontSize = builder.fontSize;
         textPaint = new Paint();
-        textPaint.setColor(builder.textColor);
         textPaint.setAntiAlias(true);
+        textPaint.setColor(builder.textColor);
         textPaint.setFakeBoldText(builder.isBold);
-        textPaint.setStyle(Paint.Style.FILL);
-        textPaint.setTypeface(builder.font);
-        textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setStrokeWidth(builder.borderThickness);
+        textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTypeface(builder.font);
 
         // border paint settings
         borderThickness = builder.borderThickness;
@@ -76,7 +91,7 @@ public class TextDrawable extends ShapeDrawable {
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(borderThickness);
 
-        // drawable paint color
+        // drawable paint setColor
         Paint paint = getPaint();
         paint.setColor(builder.color);
 
@@ -95,7 +110,6 @@ public class TextDrawable extends ShapeDrawable {
                 builder.drawable.draw(canvas);
             }
         }
-
     }
 
     private int getDarkerShade(@ColorInt int color) {
@@ -108,16 +122,14 @@ public class TextDrawable extends ShapeDrawable {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         Rect r = getBounds();
-
         // draw border
-        if (borderThickness > 0)
+        if (borderThickness > 0) {
             drawBorder(canvas);
-
+        }
         int count = canvas.save();
         if (bitmap == null) {
             canvas.translate(r.left, r.top);
         }
-
         // draw text
         int width = this.width < 0 ? r.width() : this.width;
         int height = this.height < 0 ? r.height() : this.height;
@@ -126,7 +138,6 @@ public class TextDrawable extends ShapeDrawable {
         Rect textBounds = new Rect();
         textPaint.getTextBounds(text, 0, text.length(), textBounds);
         canvas.drawText(text, width / 2, height / 2 - textBounds.exactCenterY(), textPaint);
-
         if (bitmap == null) {
             textPaint.setTextSize(fontSize);
             canvas.drawText(text, width / 2, height / 2 - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
@@ -140,13 +151,17 @@ public class TextDrawable extends ShapeDrawable {
     private void drawBorder(Canvas canvas) {
         RectF rect = new RectF(getBounds());
         rect.inset(borderThickness / 2, borderThickness / 2);
-
-        if (shape instanceof OvalShape) {
-            canvas.drawOval(rect, borderPaint);
-        } else if (shape instanceof RoundRectShape) {
-            canvas.drawRoundRect(rect, radius, radius, borderPaint);
-        } else {
-            canvas.drawRect(rect, borderPaint);
+        switch (shape) {
+            case SHAPE_ROUND_RECT:
+                canvas.drawRoundRect(rect, radius, radius, borderPaint);
+                break;
+            case SHAPE_ROUND:
+                canvas.drawOval(rect, borderPaint);
+                break;
+            case SHAPE_RECT:
+            default:
+                canvas.drawRect(rect, borderPaint);
+                break;
         }
     }
 
@@ -190,296 +205,139 @@ public class TextDrawable extends ShapeDrawable {
         return bitmap;
     }
 
-    public static IShapeBuilder builder(@NonNull Context context) {
-        return new Builder(context);
-    }
+    public static class Builder {
 
-    public static class Builder implements IConfigBuilder, IShapeBuilder, IBuilder {
-
-        private Context context;
-        private String text;
-        private int color;
         private int borderColor;
+
         private int borderThickness;
-        private int width;
-        private int height;
-        private Typeface font;
-        private RectShape shape;
-        public int textColor;
-        private int fontSize;
-        private boolean isBold;
-        private boolean toUpperCase;
-        public float radius;
+
+        private int color;
+
         public Drawable drawable;
 
-        private Builder(@NonNull Context context) {
-            this.context = context;
-            text = "";
-            color = Color.GRAY;
-            textColor = Color.WHITE;
+        private Typeface font;
+
+        private int fontSize;
+
+        private int height;
+
+        private boolean isBold;
+
+        public float radius;
+
+        private int shape;
+
+        private String text;
+
+        public int textColor;
+
+        private boolean toUpperCase;
+
+        private int width;
+
+        public Builder() {
             borderColor = -1;
             borderThickness = 0;
-            width = -1;
-            height = -1;
-            shape = new RectShape();
+            color = Color.GRAY;
+            font = TypefaceHelper.get("sans-serif-light", Typeface.NORMAL);
             fontSize = -1;
+            height = -1;
             isBold = false;
+            shape = SHAPE_RECT;
+            text = "";
+            textColor = Color.WHITE;
             toUpperCase = false;
+            width = -1;
         }
 
-        @Override
-        public IConfigBuilder width(@IntRange(from = 1, to = Integer.MAX_VALUE) int width) {
-            this.width = width;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder widthRes(@DimenRes int widthRes) {
-            return width((int) context.getResources().getDimension(widthRes));
-        }
-
-        @Override
-        public IConfigBuilder height(@IntRange(from = 1, to = Integer.MAX_VALUE) int height) {
-            this.height = height;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder heightRes(@DimenRes int heightRes) {
-            return height((int) context.getResources().getDimension(heightRes));
-        }
-
-        @Override
-        public IConfigBuilder textColor(@ColorInt int color) {
-            this.textColor = color;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness) {
-            return withBorder(thickness, this.borderColor);
-        }
-
-        public IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness, @ColorInt int color) {
-            this.borderThickness = thickness;
-            this.borderColor = color;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder withBorderRes(@DimenRes int thicknessRes) {
-            return withBorder((int) context.getResources().getDimension(thicknessRes));
-        }
-
-        @Override
-        public IConfigBuilder withBorderRes(@DimenRes int thicknessRes, @ColorInt int color) {
-            return withBorder((int) context.getResources().getDimension(thicknessRes), color);
-        }
-
-        @Override
-        public IConfigBuilder useFont(@NonNull Typeface font) {
-            this.font = font;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder useFont(@NonNull String name, int style) {
-            this.font = TypefaceHelper.get(name, style);
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder fontSize(@IntRange(from = 1, to = Integer.MAX_VALUE) int size) {
-            this.fontSize = size;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder fontSizeRes(@DimenRes int sizeRes) {
-            return fontSize((int) context.getResources().getDimension(sizeRes));
-        }
-
-        @Override
-        public IConfigBuilder bold() {
+        public Builder setBold() {
             this.isBold = true;
             return this;
         }
 
-        @Override
-        public IConfigBuilder color(@ColorInt int color) {
+        public Builder setBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness) {
+            this.borderThickness = thickness;
+            return this;
+        }
+
+        public Builder setBorderColor(@ColorInt int color) {
+            this.borderColor = color;
+            return this;
+        }
+
+        public Builder setColor(@ColorInt int color) {
             this.color = color;
             return this;
         }
 
-        @Override
-        public IConfigBuilder toUpperCase() {
-            this.toUpperCase = true;
-            return this;
-        }
-
-        @Override
-        public IConfigBuilder beginConfig() {
-            return this;
-        }
-
-        @Override
-        public IShapeBuilder endConfig() {
-            return this;
-        }
-
-        @Override
-        public IBuilder rect() {
-            this.shape = new RectShape();
-            return this;
-        }
-
-        @Override
-        public IBuilder round() {
-            this.shape = new OvalShape();
-            return this;
-        }
-
-        @Override
-        public IBuilder roundRect(@IntRange(from = 1, to = Integer.MAX_VALUE) int radius) {
-            this.radius = radius;
-            float[] radii = {radius, radius, radius, radius, radius, radius, radius, radius};
-            this.shape = new RoundRectShape(radii, null, null);
-            return this;
-        }
-
-        @Override
-        public IBuilder roundRectRes(@IntRange(from = 1, to = Integer.MAX_VALUE) int radius) {
-            return roundRect((int) context.getResources().getDimension(radius));
-        }
-
-        @Override
-        public TextDrawable buildRect(@NonNull String text, @ColorInt int color) {
-            rect();
-            return build(text, color);
-        }
-
-        @Override
-        public TextDrawable buildRect(@NonNull Drawable drawable, int color) {
-            rect();
-            return build(drawable, color);
-        }
-
-        @Override
-        public TextDrawable buildRoundRect(@NonNull String text, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius) {
-            roundRect(radius);
-            return build(text, color);
-        }
-
-        @Override
-        public TextDrawable buildRoundRect(@NonNull Drawable drawable, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius) {
-            roundRect(radius);
-            return build(drawable, color);
-        }
-        @Override
-        public TextDrawable buildRound(@NonNull String text, @ColorInt int color) {
-            round();
-            return build(text, color);
-        }
-
-        @Override
-        public TextDrawable buildRound(@NonNull Drawable drawable, @ColorInt int color) {
-            round();
-            return build(drawable, color);
-        }
-
-        @Override
-        public TextDrawable build(@NonNull String text) {
-            if (this.font == null)
-                this.font = TypefaceHelper.get("sans-serif-light", Typeface.NORMAL);
-            this.text = text;
-            return new TextDrawable(this);
-        }
-
-        @Override
-        public TextDrawable build(@NonNull String text, @ColorInt int color) {
-            if (this.font == null)
-                this.font = TypefaceHelper.get("sans-serif-light", Typeface.NORMAL);
-            this.color = color;
-            this.text = text;
-            return new TextDrawable(this);
-        }
-
-        @Override
-        public TextDrawable build(@NonNull Drawable drawable, @ColorInt int color) {
+        public Builder setDrawable(@NonNull Drawable drawable) {
             this.drawable = drawable;
-            this.color = color;
+            return this;
+        }
+
+        public Builder setFont(@NonNull Typeface font) {
+            this.font = font;
+            return this;
+        }
+
+        public Builder setFont(@NonNull String name, int style) {
+            this.font = TypefaceHelper.get(name, style);
+            return this;
+        }
+
+        public Builder setFontSize(@IntRange(from = 1, to = Integer.MAX_VALUE) int size) {
+            this.fontSize = size;
+            return this;
+        }
+
+        public Builder setHeight(@IntRange(from = 1, to = Integer.MAX_VALUE) int height) {
+            this.height = height;
+            return this;
+        }
+
+        public Builder setRadius(@IntRange(from = 1, to = Integer.MAX_VALUE) int radius) {
+            this.radius = radius;
+            return this;
+        }
+
+        public Builder setShape(@TextDrawableShape int shape) {
+            this.shape = shape;
+            return this;
+        }
+
+        public Builder setText(@NonNull String text) {
+            this.text = text;
+            return this;
+        }
+
+        public Builder setTextColor(@ColorInt int color) {
+            this.textColor = color;
+            return this;
+        }
+
+        public Builder setWidth(@IntRange(from = 1, to = Integer.MAX_VALUE) int width) {
+            this.width = width;
+            return this;
+        }
+
+        private Shape getShape() {
+            switch (shape) {
+                case SHAPE_ROUND_RECT:
+                    float[] radii = {radius, radius, radius, radius, radius, radius, radius, radius};
+                    return new RoundRectShape(radii, null, null);
+                case SHAPE_ROUND:
+                    return new OvalShape();
+                case SHAPE_RECT:
+                default:
+                    return new RectShape();
+            } 
+        }
+
+        public TextDrawable build() {
             return new TextDrawable(this);
         }
     }
-
-    public interface IConfigBuilder {
-        IConfigBuilder width(@IntRange(from = 1, to = Integer.MAX_VALUE) int width);
-
-        IConfigBuilder widthRes(@DimenRes int width);
-
-        IConfigBuilder height(@IntRange(from = 1, to = Integer.MAX_VALUE) int height);
-
-        IConfigBuilder heightRes(@DimenRes int height);
-
-        IConfigBuilder textColor(@ColorInt int color);
-
-        IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness);
-
-        IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness, @ColorInt int color);
-
-        IConfigBuilder withBorderRes(@DimenRes int thickness);
-
-        IConfigBuilder withBorderRes(@DimenRes int thickness, @ColorInt int color);
-
-        IConfigBuilder useFont(@NonNull Typeface font);
-
-        IConfigBuilder useFont(@NonNull String name, int style);
-
-        IConfigBuilder fontSize(@IntRange(from = 1, to = Integer.MAX_VALUE) int size);
-
-        IConfigBuilder fontSizeRes(@DimenRes int size);
-
-        IConfigBuilder bold();
-
-        IConfigBuilder color(@ColorInt int color);
-
-        IConfigBuilder toUpperCase();
-
-        IShapeBuilder endConfig();
-    }
-
-    public interface IBuilder {
-
-        TextDrawable build(@NonNull String text);
-
-        TextDrawable build(@NonNull String text, @ColorInt int color);
-
-        TextDrawable build(@NonNull Drawable drawable, @ColorInt int color);
-
-    }
-
-    public interface IShapeBuilder {
-
-        IConfigBuilder beginConfig();
-
-        IBuilder rect();
-
-        IBuilder round();
-
-        IBuilder roundRect(@IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
-
-        IBuilder roundRectRes(@DimenRes int radius);
-
-        TextDrawable buildRect(@NonNull String text, @ColorInt int color);
-
-        TextDrawable buildRect(@NonNull Drawable drawable, @ColorInt int color);
-
-        TextDrawable buildRoundRect(@NonNull String text, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
-
-        TextDrawable buildRoundRect(@NonNull Drawable drawable, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
-
-        TextDrawable buildRound(@NonNull String text, @ColorInt int color);
-
-        TextDrawable buildRound(@NonNull Drawable drawable, @ColorInt int color);
-    }
+    
+    @IntDef({SHAPE_RECT, SHAPE_ROUND_RECT, SHAPE_ROUND})
+    public @interface TextDrawableShape { }
 }

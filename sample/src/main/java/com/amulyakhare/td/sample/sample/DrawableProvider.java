@@ -2,7 +2,6 @@ package com.amulyakhare.td.sample.sample;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
@@ -41,87 +40,107 @@ public class DrawableProvider {
     }
 
     public TextDrawable getRect(String text) {
-        return TextDrawable.builder(mContext)
-                .buildRect(text, mGenerator.getColor(text));
+        return new TextDrawable.Builder()
+                .setColor(mGenerator.getColor(text))
+                .setShape(TextDrawable.SHAPE_RECT)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRound(String text) {
-        return TextDrawable.builder(mContext)
-                .buildRound(text, mGenerator.getColor(text));
+        return new TextDrawable.Builder()
+                .setColor(mGenerator.getColor(text))
+                .setShape(TextDrawable.SHAPE_ROUND)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRound(Drawable drawable) {
-        return TextDrawable.builder(mContext)
-                .buildRound(drawable, mGenerator.getColor(drawable));
+        return new TextDrawable.Builder()
+                .setColor(mGenerator.getColor(drawable))
+                .setDrawable(drawable)
+                .setShape(TextDrawable.SHAPE_ROUND)
+                .build();
     }
 
     public TextDrawable getRoundRect(String text) {
-        return TextDrawable.builder(mContext)
-                .buildRoundRect(text, mGenerator.getColor(text), toPx(10));
+        return new TextDrawable.Builder()
+                .setColor(mGenerator.getColor(text))
+                .setRadius(toPx(10))
+                .setShape(TextDrawable.SHAPE_ROUND_RECT)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRectWithBorder(String text) {
-        return TextDrawable.builder(mContext)
-                .beginConfig()
-                    .withBorder(toPx(2))
-                .endConfig()
-                .buildRect(text, mGenerator.getColor(text));
+        return new TextDrawable.Builder()
+                .setBorder(toPx(2))
+                .setColor(mGenerator.getColor(text))
+                .setShape(TextDrawable.SHAPE_RECT)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRoundWithBorder(String text) {
-        return TextDrawable.builder(mContext)
-                .beginConfig()
-                    .withBorder(toPx(2))
-                .endConfig()
-                .buildRound(text, mGenerator.getColor(text));
+        return new TextDrawable.Builder()
+                .setBorder(toPx(2))
+                .setColor(mGenerator.getColor(text))
+                .setShape(TextDrawable.SHAPE_ROUND)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRoundRectWithBorder(String text) {
-        return TextDrawable.builder(mContext)
-                .beginConfig()
-                    .withBorder(toPx(2))
-                .endConfig()
-                .buildRoundRect(text, mGenerator.getColor(text), toPx(10));
+        return new TextDrawable.Builder()
+                .setBorder(toPx(2))
+                .setColor(mGenerator.getColor(text))
+                .setRadius(toPx(10))
+                .setShape(TextDrawable.SHAPE_ROUND_RECT)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRectWithMultiLetter() {
         String text = "AK";
-        return TextDrawable.builder(mContext)
-                .beginConfig()
-                    .fontSize(toPx(20))
-                    .toUpperCase()
-                .endConfig()
-                .buildRect(text, mGenerator.getColor(text));
+        return new TextDrawable.Builder()
+                .setColor(mGenerator.getColor(text))
+                .setFontSize(toPx(20))
+                .setShape(TextDrawable.SHAPE_RECT)
+                .setText(text)
+                .build();
     }
 
     public TextDrawable getRoundWithCustomFont() {
         String text = "Bold";
-        return TextDrawable.builder(mContext)
-                .beginConfig()
-                    .useFont(Typeface.DEFAULT)
-                    .fontSize(toPx(15))
-                    .textColor(0xfff58559)
-                    .bold()
-                .endConfig()
-                .buildRect(text, Color.DKGRAY /*toPx(5)*/);
+        return new TextDrawable.Builder()
+                .setBold()
+                .setColor(mGenerator.getColor(text))
+                .setFont(Typeface.DEFAULT)
+                .setFontSize(toPx(15))
+                .setShape(TextDrawable.SHAPE_RECT)
+                .setText(text)
+                .setTextColor(0xfff58559)
+                .build();
     }
 
     public Drawable getRectWithCustomSize() {
         String leftText = "I";
         String rightText = "J";
 
-        TextDrawable.IBuilder builder = TextDrawable.builder(mContext)
-                .beginConfig()
-                    .width(toPx(29))
-                    .withBorder(toPx(2))
-                .endConfig()
-                .rect();
+        TextDrawable.Builder builder = new TextDrawable.Builder()
+                .setWidth(toPx(29))
+                .setBorder(toPx(2))
+                .setShape(TextDrawable.SHAPE_RECT);
 
         TextDrawable left = builder
-                .build(leftText, mGenerator.getColor(leftText));
+                .setColor(mGenerator.getColor(leftText))
+                .setText(leftText)
+                .build();
 
         TextDrawable right = builder
-                .build(rightText, mGenerator.getColor(rightText));
+                .setColor(mGenerator.getColor(rightText))
+                .setText(rightText)
+                .build();
 
         Drawable[] layerList = {
                 new InsetDrawable(left, 0, 0, toPx(31), 0),
@@ -131,12 +150,15 @@ public class DrawableProvider {
     }
 
     public Drawable getRectWithAnimation() {
-        TextDrawable.IBuilder builder = TextDrawable.builder(mContext)
-                .rect();
+        TextDrawable.Builder builder = new TextDrawable.Builder()
+                .setShape(TextDrawable.SHAPE_RECT);
 
         AnimationDrawable animationDrawable = new AnimationDrawable();
         for (int i = 10; i > 0; i--) {
-            TextDrawable frame = builder.build(String.valueOf(i), mGenerator.getRandomColor());
+            TextDrawable frame = builder
+                    .setColor(mGenerator.getRandomColor())
+                    .setText(String.valueOf(i))
+                    .build();
             animationDrawable.addFrame(frame, 1200);
         }
         animationDrawable.setOneShot(false);
