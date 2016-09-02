@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.afollestad:TextDrawable:8aa467a17d'
+    compile 'com.alvinhkh:TextDrawable:c1c2b5b'
 }
 ```
 
@@ -32,9 +32,11 @@ dependencies {
 ```
 **Note:** Specify width/height for the `ImageView` and the `drawable` will auto-scale to fit the size.
 ```java
-TextDrawable drawable = TextDrawable.builder(this)
-    // use buildRect(String, int) for literal color value
-    .buildRectRes("A", R.color.material_red);
+TextDrawable drawable = new TextDrawable.Builder()
+    .setColor(Color.RED)
+    .setShape(TextDrawable.SHAPE_RECT)
+    .setText("A")
+    .build();
 
 ImageView image = (ImageView) findViewById(R.id.image_view);
 image.setImageDrawable(drawable);
@@ -46,12 +48,18 @@ image.setImageDrawable(drawable);
 </p>
 
 ```java
-TextDrawable drawable1 = TextDrawable.builder()
-    // use buildRoundRect(String, int, int) for literal color value and pixel size
-    .buildRoundRectRes("A", R.color.material_red, R.dimen.radius_size); 
+TextDrawable drawable1 = new TextDrawable.Builder()
+    .setColor(Color.RED)
+    .setRadius(2)
+    .setShape(TextDrawable.SHAPE_ROUND_RECT)
+    .setText("A")
+    .build(); 
 
-TextDrawable drawable2 = TextDrawable.builder()
-    .buildRound("A", Color.RED);
+TextDrawable drawable2 = new TextDrawable.Builder()
+    .setColor(Color.RED)
+    .setShape(TextDrawable.SHAPE_ROUND)
+    .setText("A")
+    .build();
 ```
 
 ####3. Add border:
@@ -60,25 +68,28 @@ TextDrawable drawable2 = TextDrawable.builder()
 </p>
 
 ```java
-TextDrawable drawable = TextDrawable.builder()
-                .beginConfig()
-                    .withBorderRes(R.dimen.border_size, Color.BLUE)  // use withBorder(int) for literal pixel size
-                .endConfig()
-                .buildRoundRect("A", Color.RED, 10);
+TextDrawable drawable = new TextDrawable.Builder()
+    .setBorder(1)
+    .setBolderColor(Color.BLUE)
+    .setColor(Color.RED)
+    .setRadius(10)
+    .setShape(TextDrawable.SHAPE_ROUND_RECT)
+    .setText("A")
+    .build();
 ```
 
 ####4. Modify font style:
 
 ```java
-TextDrawable drawable = TextDrawable.builder(this)
-                .beginConfig()
-	                .textColorRes(android.R.color.black)  // use textColor(int) for literal color value
-                    .useFont(Typeface.DEFAULT)
-                    .fontSizeRes(R.dimen.title_size)  // use fontSize(int) for literal pixel size
-                    .bold()
-                    .toUpperCase()
-                .endConfig()
-                .buildRect("a", Color.RED)
+TextDrawable drawable = new TextDrawable.Builder()
+    .setBold()
+    .setColor(Color.RED)
+    .setFont(Typeface.DEFAULT)
+    .setFontSize(48) 
+    .setText("A")
+    .setTextColor(COLOR.BLACK) 
+    .toUpperCase()
+    .build()
 ```
 
 ####5. Built-in color generator:
@@ -91,33 +102,32 @@ int color1 = generator.getRandomColor();
 int color2 = generator.getColor("user@gmail.com")
 
 // declare the builder object once.
-TextDrawable.IBuilder builder = TextDrawable.builder(this)
-				.beginConfig()
-                    .withBorderRes(R.dimen.border_size, Color.BLUE)  // use withBorder(int) for literal values
-				.endConfig()
-				.rect();
+TextDrawable.IBuilder builder = new TextDrawable.Builder()
+    .setBorder(1) 
+    .setBorderColor(Color.BLUE)
+    .setShape(TextDrawable.SHAPE_ROUND);
 
 // reuse the builder specs to create multiple drawables
-TextDrawable ic1 = builder.build("A", color1);
-TextDrawable ic2 = builder.build("B", color2);
+TextDrawable ic1 = builder.setColor(color1).setText("A").build();
+TextDrawable ic2 = builder.setColor(color2).setText("B").build();
 ``` 
 
 ####6. Specify the width / height:
 
 ```xml
 <ImageView android:layout_width="wrap_content"
-	       android:layout_height="wrap_content"
-	       android:id="@+id/image_view" />
+    android:layout_height="wrap_content"
+    android:id="@+id/image_view" />
 ```
 **Note:**  The `ImageView` could use `wrap_content` width/height. You could set the width/height of the `drawable` using code.
 
 ```java
-TextDrawable drawable = TextDrawable.builder(this)
-				.beginConfig()
-					.widthRes(R.dimen.thumbnail_size)  // use width(int) for literal values
-					.heightRes(R.dimen.thumbnail_size)  // use height(int) for literal values
-				.endConfig()
-                .buildRectRes("A", R.color.material_red);  // use buildRect(String, int) for literal color value
+TextDrawable drawable = new TextDrawable.Builder()
+    .setWidth(48)
+    .setHeight(48)
+    .setColor(Color.RED)
+    .setText("A")
+    .build();  
 
 ImageView image = (ImageView) findViewById(R.id.image_view);
 image.setImageDrawable(drawable);
