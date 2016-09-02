@@ -62,7 +62,7 @@ TextDrawable drawable2 = TextDrawable.builder()
 ```java
 TextDrawable drawable = TextDrawable.builder()
                 .beginConfig()
-                    .withBorderRes(R.dimen.border_size)  // use withBorder(int) for literal pixel size
+                    .withBorderRes(R.dimen.border_size, Color.BLUE)  // use withBorder(int) for literal pixel size
                 .endConfig()
                 .buildRoundRect("A", Color.RED, 10);
 ```
@@ -93,7 +93,7 @@ int color2 = generator.getColor("user@gmail.com")
 // declare the builder object once.
 TextDrawable.IBuilder builder = TextDrawable.builder(this)
 				.beginConfig()
-					.withBorderRes(R.dimen.border_size)  // use withBorder(int) for literal values
+                    .withBorderRes(R.dimen.border_size, Color.BLUE)  // use withBorder(int) for literal values
 				.endConfig()
 				.rect();
 

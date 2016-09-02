@@ -37,6 +37,7 @@ public class TextDrawable extends ShapeDrawable {
     private final int fontSize;
     private final float radius;
     private final int borderThickness;
+    private final int borderColor;
 
     private TextDrawable(Builder builder) {
         super(builder.shape);
@@ -63,8 +64,10 @@ public class TextDrawable extends ShapeDrawable {
 
         // border paint settings
         borderThickness = builder.borderThickness;
+        borderColor = builder.borderColor;
         borderPaint = new Paint();
-        borderPaint.setColor(getDarkerShade(builder.color));
+        if (borderColor == -1) borderPaint.setColor(getDarkerShade(builder.color));
+        else borderPaint.setColor(borderColor);
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(borderThickness);
 
@@ -150,6 +153,7 @@ public class TextDrawable extends ShapeDrawable {
         private Context context;
         private String text;
         private int color;
+        private int borderColor;
         private int borderThickness;
         private int width;
         private int height;
@@ -166,6 +170,7 @@ public class TextDrawable extends ShapeDrawable {
             text = "";
             color = Color.GRAY;
             textColor = Color.WHITE;
+            borderColor = -1;
             borderThickness = 0;
             width = -1;
             height = -1;
@@ -211,13 +216,23 @@ public class TextDrawable extends ShapeDrawable {
 
         @Override
         public IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness) {
+            return withBorder(thickness, this.borderColor);
+        }
+
+        public IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness, @ColorInt int color) {
             this.borderThickness = thickness;
+            this.borderColor = color;
             return this;
         }
 
         @Override
         public IConfigBuilder withBorderRes(@DimenRes int thicknessRes) {
             return withBorder((int) context.getResources().getDimension(thicknessRes));
+        }
+
+        @Override
+        public IConfigBuilder withBorderRes(@DimenRes int thicknessRes, @ColorInt int color) {
+            return withBorder((int) context.getResources().getDimension(thicknessRes), color);
         }
 
         @Override
@@ -359,7 +374,11 @@ public class TextDrawable extends ShapeDrawable {
 
         IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness);
 
+        IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness, @ColorInt int color);
+
         IConfigBuilder withBorderRes(@DimenRes int thickness);
+
+        IConfigBuilder withBorderRes(@DimenRes int thickness, @ColorInt int color);
 
         IConfigBuilder useFont(@NonNull Typeface font);
 
