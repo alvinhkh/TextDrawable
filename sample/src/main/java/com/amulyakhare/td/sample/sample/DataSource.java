@@ -2,6 +2,10 @@ package com.amulyakhare.td.sample.sample;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
+
+import com.amulyakhare.td.R;
 
 import java.util.ArrayList;
 
@@ -13,10 +17,12 @@ public class DataSource {
 
     public static final int NO_NAVIGATION = -1;
 
+    private Context mContext;
     private ArrayList<DataItem> mDataSource;
     private DrawableProvider mProvider;
 
     public DataSource(Context context) {
+        mContext = context;
         mProvider = new DrawableProvider(context);
         mDataSource = new ArrayList<DataItem>();
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_RECT));
@@ -25,6 +31,7 @@ public class DataSource {
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_RECT_BORDER));
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_ROUND_RECT_BORDER));
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_ROUND_BORDER));
+        mDataSource.add(itemFromType(DrawableProvider.SAMPLE_ROUND_DRAWABLE));
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_MULTIPLE_LETTERS));
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_FONT));
         mDataSource.add(itemFromType(DrawableProvider.SAMPLE_SIZE));
@@ -67,6 +74,11 @@ public class DataSource {
             case DrawableProvider.SAMPLE_ROUND_BORDER:
                 label = "Round with Border";
                 drawable = mProvider.getRoundWithBorder("F");
+                break;
+            case DrawableProvider.SAMPLE_ROUND_DRAWABLE:
+                label = "Round with Drawable";
+                drawable = mProvider.getRound(ContextCompat.getDrawable(mContext, R.drawable.check_sm));
+                type = NO_NAVIGATION;
                 break;
             case DrawableProvider.SAMPLE_MULTIPLE_LETTERS:
                 label = "Support multiple letters";
