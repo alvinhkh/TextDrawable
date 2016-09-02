@@ -256,12 +256,6 @@ public class TextDrawable extends ShapeDrawable {
         }
 
         @Override
-        public IConfigBuilder textColorRes(@ColorRes int color) {
-            //noinspection deprecation
-            return textColor(context.getResources().getColor(color));
-        }
-
-        @Override
         public IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness) {
             return withBorder(thickness, this.borderColor);
         }
@@ -308,6 +302,12 @@ public class TextDrawable extends ShapeDrawable {
         @Override
         public IConfigBuilder bold() {
             this.isBold = true;
+            return this;
+        }
+
+        @Override
+        public IConfigBuilder color(@ColorInt int color) {
+            this.color = color;
             return this;
         }
 
@@ -359,13 +359,6 @@ public class TextDrawable extends ShapeDrawable {
         }
 
         @Override
-        public TextDrawable buildRectRes(@NonNull String text, @ColorRes int colorRes) {
-            rect();
-            //noinspection deprecation
-            return build(text, context.getResources().getColor(colorRes));
-        }
-
-        @Override
         public TextDrawable buildRect(@NonNull Drawable drawable, int color) {
             rect();
             return build(drawable, color);
@@ -382,14 +375,6 @@ public class TextDrawable extends ShapeDrawable {
             roundRect(radius);
             return build(drawable, color);
         }
-
-        @Override
-        public TextDrawable buildRoundRectRes(@NonNull String text, @ColorRes int colorRes, @DimenRes int radiusRes) {
-            //noinspection deprecation
-            return buildRoundRect(text, context.getResources().getColor(colorRes),
-                    (int) context.getResources().getDimension(radiusRes));
-        }
-
         @Override
         public TextDrawable buildRound(@NonNull String text, @ColorInt int color) {
             round();
@@ -403,15 +388,11 @@ public class TextDrawable extends ShapeDrawable {
         }
 
         @Override
-        public TextDrawable buildRoundRes(@NonNull String text, @ColorRes int colorRes) {
-            //noinspection deprecation
-            return buildRound(text, context.getResources().getColor(colorRes));
-        }
-
-        @Override
-        public TextDrawable buildRes(@NonNull String text, @ColorRes int colorRes) {
-            //noinspection deprecation
-            return build(text, context.getResources().getColor(colorRes));
+        public TextDrawable build(@NonNull String text) {
+            if (this.font == null)
+                this.font = TypefaceHelper.get("sans-serif-light", Typeface.NORMAL);
+            this.text = text;
+            return new TextDrawable(this);
         }
 
         @Override
@@ -442,8 +423,6 @@ public class TextDrawable extends ShapeDrawable {
 
         IConfigBuilder textColor(@ColorInt int color);
 
-        IConfigBuilder textColorRes(@ColorRes int colorRes);
-
         IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness);
 
         IConfigBuilder withBorder(@IntRange(from = 1, to = Integer.MAX_VALUE) int thickness, @ColorInt int color);
@@ -462,6 +441,8 @@ public class TextDrawable extends ShapeDrawable {
 
         IConfigBuilder bold();
 
+        IConfigBuilder color(@ColorInt int color);
+
         IConfigBuilder toUpperCase();
 
         IShapeBuilder endConfig();
@@ -469,11 +450,11 @@ public class TextDrawable extends ShapeDrawable {
 
     public interface IBuilder {
 
+        TextDrawable build(@NonNull String text);
+
         TextDrawable build(@NonNull String text, @ColorInt int color);
 
-        TextDrawable build(@NonNull Drawable drawable, @ColorRes int color);
-
-        TextDrawable buildRes(@NonNull String text, @ColorRes int colorRes);
+        TextDrawable build(@NonNull Drawable drawable, @ColorInt int color);
 
     }
 
@@ -491,20 +472,14 @@ public class TextDrawable extends ShapeDrawable {
 
         TextDrawable buildRect(@NonNull String text, @ColorInt int color);
 
-        TextDrawable buildRect(@NonNull Drawable drawable, @ColorRes int color);
-
-        TextDrawable buildRectRes(@NonNull String text, @ColorRes int colorRes);
+        TextDrawable buildRect(@NonNull Drawable drawable, @ColorInt int color);
 
         TextDrawable buildRoundRect(@NonNull String text, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
 
-        TextDrawable buildRoundRect(@NonNull Drawable drawable, @ColorRes  int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
-
-        TextDrawable buildRoundRectRes(@NonNull String text, @ColorRes int colorRes, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
+        TextDrawable buildRoundRect(@NonNull Drawable drawable, @ColorInt int color, @IntRange(from = 1, to = Integer.MAX_VALUE) int radius);
 
         TextDrawable buildRound(@NonNull String text, @ColorInt int color);
 
-        TextDrawable buildRound(@NonNull Drawable drawable, @ColorRes int color);
-
-        TextDrawable buildRoundRes(@NonNull String text, @ColorRes int colorRes);
+        TextDrawable buildRound(@NonNull Drawable drawable, @ColorInt int color);
     }
 }
