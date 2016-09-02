@@ -175,6 +175,21 @@ public class TextDrawable extends ShapeDrawable {
         return height;
     }
 
+    public Bitmap getBitmap() {
+        Bitmap bitmap;
+        if (getIntrinsicWidth() <= 0 || getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, getOpacity() != PixelFormat.OPAQUE ?
+                    Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565);
+        } else {
+            bitmap = Bitmap.createBitmap(getIntrinsicWidth(), getIntrinsicHeight(),
+                    getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565);
+        }
+        Canvas canvas = new Canvas(bitmap);
+        setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        draw(canvas);
+        return bitmap;
+    }
+
     public static IShapeBuilder builder(@NonNull Context context) {
         return new Builder(context);
     }
